@@ -1,0 +1,213 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /users/{userId}
+    //Subcollections:
+    //   - /users/{userId}/avatars/{avatarId}
+    //   - /users/{userId}/medicalProfile/{docId}
+    //   - /users/{userId}/clonedVoices/{voiceId}
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+          (request.auth.token.email == "fa465037@gmail.com" && request.auth.token.email_verified == true)
+        );
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function isValidUserProfile(data, userId) {
+      let allowedKeys = [
+        'uid',
+        'displayName',
+        'email',
+        'photoURL',
+        'activeTab',
+        'selectedAvatarId',
+        'linkedTikTokUsername',
+        'whatsAppPhone',
+        'mouthCalibrationJson',
+        'medicalProfileJson',
+        'role',
+        'updatedAt'
+      ];
+      return data.keys().hasOnly(allowedKeys) &&
+        data.keys().hasAll(['uid', 'role', 'updatedAt']) &&
+        data.uid is string &&
+        data.uid == userId &&
+        data.role in ['user', 'admin'] &&
+        isValidDateString(data.updatedAt) &&
+        (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 120)) &&
+        (!('email' in data) || (data.email is string && data.email.size() <= 254)) &&
+        (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 2048)) &&
+        (!('activeTab' in data) || (data.activeTab in ['chat', 'whatsapp', 'tiktok', 'script', 'scheduler', 'medical', 'voice_clone'])) &&
+        (!('selectedAvatarId' in data) || (data.selectedAvatarId is string && data.selectedAvatarId.size() <= 120)) &&
+        (!('linkedTikTokUsername' in data) || (data.linkedTikTokUsername is string && data.linkedTikTokUsername.size() <= 100)) &&
+        (!('whatsAppPhone' in data) || (data.whatsAppPhone is string && data.whatsAppPhone.size() <= 40)) &&
+        (!('mouthCalibrationJson' in data) || (data.mouthCalibrationJson is string && data.mouthCalibrationJson.size() <= 2000)) &&
+        (!('medicalProfileJson' in data) || (data.medicalProfileJson is string && data.medicalProfileJson.size() <= 15000));
+    }
+
+    function isValidSavedAvatarConfig(data, userId) {
+      let allowedKeys = [
+        'id',
+        'ownerUid',
+        'name',
+        'role',
+        'dialect',
+        'voiceName',
+        'speechPitch',
+        'speechRate',
+        'mouthX',
+        'mouthY',
+        'mouthScale',
+        'sensitivity',
+        'noiseThreshold',
+        'smoothing',
+        'updatedAt'
+      ];
+      return data.keys().hasOnly(allowedKeys) &&
+        data.keys().hasAll(['id', 'ownerUid', 'name', 'updatedAt']) &&
+        data.id is string &&
+        data.id.size() >= 1 &&
+        data.id.size() <= 120 &&
+        data.ownerUid is string &&
+        data.ownerUid == userId &&
+        data.name is string &&
+        data.name.size() >= 1 &&
+        data.name.size() <= 120 &&
+        isValidDateString(data.updatedAt);
+    }
+
+    function isValidMedicalProfileDoc(data, userId) {
+      let allowedKeys = [
+        'ownerUid',
+        'fullName',
+        'age',
+        'gender',
+        'bloodType',
+        'weightKg',
+        'heightCm',
+        'allergies',
+        'chronicConditions',
+        'currentMedications',
+        'pastSurgeries',
+        'familyHistory',
+        'bloodPressureBaseline',
+        'fastingGlucoseBaseline',
+        'smokingStatus',
+        'emergencyContactName',
+        'emergencyContactPhone',
+        'medicalNotes',
+        'updatedAt'
+      ];
+      return data.keys().hasOnly(allowedKeys) &&
+        data.keys().hasAll(['ownerUid', 'updatedAt']) &&
+        data.ownerUid is string &&
+        data.ownerUid == userId &&
+        isValidDateString(data.updatedAt) &&
+        (!('fullName' in data) || (data.fullName is string && data.fullName.size() <= 150)) &&
+        (!('bloodType' in data) || (data.bloodType is string && data.bloodType.size() <= 20)) &&
+        (!('bloodPressureBaseline' in data) || (data.bloodPressureBaseline is string && data.bloodPressureBaseline.size() <= 40)) &&
+        (!('fastingGlucoseBaseline' in data) || (data.fastingGlucoseBaseline is string && data.fastingGlucoseBaseline.size() <= 40)) &&
+        (!('emergencyContactName' in data) || (data.emergencyContactName is string && data.emergencyContactName.size() <= 150)) &&
+        (!('emergencyContactPhone' in data) || (data.emergencyContactPhone is string && data.emergencyContactPhone.size() <= 50)) &&
+        (!('medicalNotes' in data) || (data.medicalNotes is string && data.medicalNotes.size() <= 4000)) &&
+        (!('allergies' in data) || (data.allergies is list && data.allergies.size() <= 50)) &&
+        (!('chronicConditions' in data) || (data.chronicConditions is list && data.chronicConditions.size() <= 50)) &&
+        (!('currentMedications' in data) || (data.currentMedications is list && data.currentMedications.size() <= 50)) &&
+        (!('pastSurgeries' in data) || (data.pastSurgeries is list && data.pastSurgeries.size() <= 50)) &&
+        (!('familyHistory' in data) || (data.familyHistory is list && data.familyHistory.size() <= 50));
+    }
+
+    function isValidClonedVoiceDoc(data, userId) {
+      let allowedKeys = [
+        'id',
+        'ownerUid',
+        'name',
+        'gender',
+        'geminiVoice',
+        'defaultPitch',
+        'defaultRate',
+        'fundamentalHz',
+        'spectralCentroidHz',
+        'roughness',
+        'echo',
+        'profileJson',
+        'updatedAt'
+      ];
+      return data.keys().hasOnly(allowedKeys) &&
+        data.keys().hasAll(['id', 'ownerUid', 'name', 'updatedAt']) &&
+        data.id is string &&
+        data.id.size() >= 1 &&
+        data.id.size() <= 120 &&
+        data.ownerUid is string &&
+        data.ownerUid == userId &&
+        data.name is string &&
+        data.name.size() >= 1 &&
+        data.name.size() <= 120 &&
+        isValidDateString(data.updatedAt) &&
+        (!('profileJson' in data) || (data.profileJson is string && data.profileJson.size() <= 25000));
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) &&
+        isValidUserProfile(request.resource.data, userId) &&
+        (request.resource.data.role == 'user' || isAdmin());
+      allow update: if isOwner(userId) &&
+        isValidUserProfile(request.resource.data, userId) &&
+        request.resource.data.uid == resource.data.uid &&
+        (request.resource.data.role == resource.data.role || isAdmin());
+      allow delete: if isOwner(userId) || isAdmin();
+
+      match /avatars/{avatarId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) &&
+          isValidSavedAvatarConfig(request.resource.data, userId);
+        allow update: if isOwner(userId) &&
+          isValidSavedAvatarConfig(request.resource.data, userId) &&
+          request.resource.data.ownerUid == resource.data.ownerUid;
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /medicalProfile/{docId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) &&
+          isValidMedicalProfileDoc(request.resource.data, userId);
+        allow update: if isOwner(userId) &&
+          isValidMedicalProfileDoc(request.resource.data, userId) &&
+          request.resource.data.ownerUid == resource.data.ownerUid;
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /clonedVoices/{voiceId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) &&
+          isValidClonedVoiceDoc(request.resource.data, userId);
+        allow update: if isOwner(userId) &&
+          isValidClonedVoiceDoc(request.resource.data, userId) &&
+          request.resource.data.ownerUid == resource.data.ownerUid;
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
+  }
+}

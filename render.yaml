@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: ai-avatar-tiktok-cloud-bridge
+    runtime: node
+    rootDir: cloud-bridge
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: TIKTOK_USERNAME
+        value: ahlam.live
+      - key: WEBHOOK_URL
+        value: https://ais-dev-j6wm3hhg2sk7sic3tjlgpz-628659961432.europe-west3.run.app/api/tiktok/webhook
+      - key: TIKTOK_WEBHOOK_SECRET
+        sync: false

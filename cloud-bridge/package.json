@@ -1,0 +1,18 @@
+{
+  "name": "ai-avatar-tiktok-cloud-bridge",
+  "version": "1.0.0",
+  "description": "Persistent cloud worker bridge connecting TikTok LIVE events to AI Avatar Studio webhook",
+  "private": true,
+  "type": "module",
+  "main": "cloud-bridge.mjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node cloud-bridge.mjs",
+    "bridge": "node cloud-bridge.mjs"
+  },
+  "dependencies": {
+    "tiktok-live-connector": "^1.2.4"
+  }
+}

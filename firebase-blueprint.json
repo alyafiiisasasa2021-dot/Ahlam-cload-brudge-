@@ -1,0 +1,312 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Authenticated user profile and studio preferences for Qais Avatar Studio.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the user."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the user."
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Avatar photo URL of the user."
+        },
+        "activeTab": {
+          "type": "string",
+          "enum": ["chat", "whatsapp", "tiktok", "script", "scheduler", "medical", "voice_clone"],
+          "description": "Last active studio tab."
+        },
+        "selectedAvatarId": {
+          "type": "string",
+          "description": "Currently selected avatar ID."
+        },
+        "linkedTikTokUsername": {
+          "type": "string",
+          "description": "Linked TikTok handle."
+        },
+        "whatsAppPhone": {
+          "type": "string",
+          "description": "Configured WhatsApp phone number."
+        },
+        "mouthCalibrationJson": {
+          "type": "string",
+          "description": "Serialized JSON of the user's precision mouth calibration parameters."
+        },
+        "medicalProfileJson": {
+          "type": "string",
+          "description": "Serialized JSON of the user's medical profile for cross-device access."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"],
+          "description": "User role."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of last update."
+        }
+      },
+      "required": ["uid", "role", "updatedAt"]
+    },
+    "SavedAvatarConfig": {
+      "title": "Saved Avatar Config",
+      "description": "User's customized avatar configuration and lip-sync calibration stored in Firestore.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique avatar ID."
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "UID of the owner."
+        },
+        "name": {
+          "type": "string",
+          "description": "Avatar display name."
+        },
+        "role": {
+          "type": "string",
+          "description": "Avatar role or title."
+        },
+        "dialect": {
+          "type": "string",
+          "description": "Arabic dialect."
+        },
+        "voiceName": {
+          "type": "string",
+          "description": "Selected voice preset ID."
+        },
+        "speechPitch": {
+          "type": "number",
+          "description": "Voice pitch multiplier."
+        },
+        "speechRate": {
+          "type": "number",
+          "description": "Voice rate multiplier."
+        },
+        "mouthX": {
+          "type": "number",
+          "description": "Horizontal lip center percentage."
+        },
+        "mouthY": {
+          "type": "number",
+          "description": "Vertical lip center percentage."
+        },
+        "mouthScale": {
+          "type": "number",
+          "description": "Lip width scale."
+        },
+        "sensitivity": {
+          "type": "number",
+          "description": "Jaw and lip opening sensitivity."
+        },
+        "noiseThreshold": {
+          "type": "number",
+          "description": "Silent noise gate threshold."
+        },
+        "smoothing": {
+          "type": "number",
+          "description": "Lip motion smoothing factor."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of last update."
+        }
+      },
+      "required": ["id", "ownerUid", "name", "updatedAt"]
+    },
+    "MedicalProfileDoc": {
+      "title": "User Medical Profile",
+      "description": "User's personal health and medical profile synced across devices.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "description": "UID of the profile owner."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Patient full name."
+        },
+        "age": {
+          "type": "number",
+          "description": "Patient age in years."
+        },
+        "gender": {
+          "type": "string",
+          "description": "Patient gender."
+        },
+        "bloodType": {
+          "type": "string",
+          "description": "Blood group."
+        },
+        "weightKg": {
+          "type": "number",
+          "description": "Weight in kilograms."
+        },
+        "heightCm": {
+          "type": "number",
+          "description": "Height in centimeters."
+        },
+        "allergies": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of known allergies."
+        },
+        "chronicConditions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of chronic medical conditions."
+        },
+        "currentMedications": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of current medications and supplements."
+        },
+        "pastSurgeries": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of past surgeries."
+        },
+        "familyHistory": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Family medical history."
+        },
+        "bloodPressureBaseline": {
+          "type": "string",
+          "description": "Usual blood pressure reading."
+        },
+        "fastingGlucoseBaseline": {
+          "type": "string",
+          "description": "Usual fasting blood glucose."
+        },
+        "smokingStatus": {
+          "type": "string",
+          "enum": ["never", "former", "current"],
+          "description": "Smoking status."
+        },
+        "emergencyContactName": {
+          "type": "string",
+          "description": "Emergency contact name."
+        },
+        "emergencyContactPhone": {
+          "type": "string",
+          "description": "Emergency contact phone."
+        },
+        "medicalNotes": {
+          "type": "string",
+          "description": "Additional medical notes."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of last update."
+        }
+      },
+      "required": ["ownerUid", "updatedAt"]
+    },
+    "ClonedVoiceDoc": {
+      "title": "Cloned Voice Profile",
+      "description": "User's cloned voice acoustic fingerprint and synthesis configuration.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique cloned voice ID."
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "UID of the owner."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the cloned voice."
+        },
+        "gender": {
+          "type": "string",
+          "enum": ["male", "female"],
+          "description": "Detected or selected vocal gender."
+        },
+        "geminiVoice": {
+          "type": "string",
+          "description": "Matched base synthesis voice."
+        },
+        "defaultPitch": {
+          "type": "number",
+          "description": "Cloned fundamental frequency pitch ratio."
+        },
+        "defaultRate": {
+          "type": "number",
+          "description": "Cloned speaking cadence rate."
+        },
+        "fundamentalHz": {
+          "type": "number",
+          "description": "Measured F0 in Hz."
+        },
+        "spectralCentroidHz": {
+          "type": "number",
+          "description": "Measured spectral brightness in Hz."
+        },
+        "roughness": {
+          "type": "number",
+          "description": "Vocal texture roughness."
+        },
+        "echo": {
+          "type": "number",
+          "description": "Vocal room resonance."
+        },
+        "profileJson": {
+          "type": "string",
+          "description": "Serialized VoiceToneProfile JSON."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of last update."
+        }
+      },
+      "required": ["id", "ownerUid", "name", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "User profile document containing studio preferences and mouth calibration."
+    },
+    "/users/{userId}/avatars/{avatarId}": {
+      "schema": {
+        "$ref": "#/entities/SavedAvatarConfig"
+      },
+      "description": "User's saved avatar configurations and lip-sync parameters."
+    },
+    "/users/{userId}/medicalProfile/{docId}": {
+      "schema": {
+        "$ref": "#/entities/MedicalProfileDoc"
+      },
+      "description": "User's personal medical profile synced across devices."
+    },
+    "/users/{userId}/clonedVoices/{voiceId}": {
+      "schema": {
+        "$ref": "#/entities/ClonedVoiceDoc"
+      },
+      "description": "User's cloned voices and acoustic fingerprints."
+    }
+  }
+}
